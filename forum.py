@@ -7,8 +7,9 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 import subprocess
 import re
-url = 'https://forum.index.hu/Article/showArticle?t=9004540'
-url = 'https://forum.index.hu/Article/showArticle?t=9245164'
+import argparse
+from argparse import RawTextHelpFormatter
+
 chrome_driver_path = '/home/balogh/chromedriver'
 chrome_options = Options()
 chrome_options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36")
@@ -17,10 +18,22 @@ webdriver = webdriver.Chrome(
   executable_path=chrome_driver_path, options=chrome_options
 )
 
+epilog_text = "Backup tool for topics on Inda forums\n"
+
+parser = argparse.ArgumentParser(description="Inda forum backup tool",
+                                 epilog=epilog_text,
+                                 formatter_class=RawTextHelpFormatter)
+parser.add_argument('-t',
+                    '--topic',
+                    dest='topic',
+                    action="store")
+
+options = parser.parse_args()
+
 with webdriver as driver:
     wait = WebDriverWait(driver, 1)
-    driver.get(url)
-    driver.implicitly_wait(1)
+    driver.get(options.topic)
+    driver.implicitly_wait(5)
     forward = True
     page=1
     while forward:
@@ -42,6 +55,7 @@ with webdriver as driver:
         for navilink in navilinks:
             if str(page) ==  navilink.text:
                navilink.click()
+               forward=True
                break
             if not navilink.text:
                 forward=False
